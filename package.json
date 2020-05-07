@@ -1,0 +1,22 @@
+{
+  "name": "gtps-wrapper",
+  "version": "0.2.0",
+  "description": "This is a wrapper for the [Growtopia Noob's Private Server](https://github.com/growtopianoobs/growtopiaserver).  \r But it uses it's own C++ Code, most structs are from his code, handling of event types can be handled in either the C++ Binding or here.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alexander9673/gtps-wrapper.git"
+  },
+  "author": "_alexander#9673",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Alexander9673/gtps-wrapper/issues"
+  },
+  "homepage": "https://github.com/Alexander9673/gtps-wrapper#readme"
+}
