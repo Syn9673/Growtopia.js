@@ -114,8 +114,14 @@ class Main extends EventEmitter {
   
       buffer[i / 2] = x;
     }
+
+    const p = {};
+
+    p.data = buffer;
+    p.length = 61;
+    p.indexes = 0;
     
-    return buffer;
+    return p;
   }
 };
 
