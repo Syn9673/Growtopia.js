@@ -2,9 +2,6 @@
 This is a wrapper for the [Growtopia Noob's Private Server](https://github.com/growtopianoobs/growtopiaserver).  
 But it uses it's own C++ Code, some structs are from his code, handling of event types can be handled in either the C++ Binding or here. While packet encryption is mostly done here as well, the only encryption for the packets which is in the C++ Binding is the `packetEnd` function, but i'm looking forward to move it to nodejs.
 
-## Warning
-**PLEASE DO NOT USE ANY VERSION OF NODEJS AFTER v13.0.0**
-
 ## Running
 You would have to make a sepearate .js file and copy the example below.  
 For the webserver, simply run `node web.js` on a separate terminal/cmd/shell.
