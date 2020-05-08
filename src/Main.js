@@ -1,14 +1,18 @@
 const { EventEmitter } = require('events');
+const { readFileSync } = require('fs');
 
 /**
  * The Main Class is the file that you would require to handle everything.
  * @extends EventEmitter The class responsible for handling events.
- * @prop {Number} port The port to use for the growtopia server.
- * @prop {Number} channels The amount of channels to use.
- * @prop {Number} peers The amount of peers to use.
- * @prop {Object} bandwith Options for the bandwith.
- * @prop {Number} bandwith.incoming The max amount of incoming bandwith.
- * @prop {Number} bandwith.outgoing The max amount of outgoing bandwith.
+ * @prop {Object} options Options for the server.
+ * @prop {Number} options.port The port to use for the growtopia server.
+ * @prop {Number} options.channels The amount of channels to use.
+ * @prop {Number} options.peers The amount of peers to use.
+ * @prop {Object} options.bandwith Options for the bandwith.
+ * @prop {Number} options.bandwith.incoming The max amount of incoming bandwith.
+ * @prop {Number} options.bandwith.outgoing The max amount of outgoing bandwith.
+ * @prop {String} options.location The location of the items.dat file.
+ * @prop {String} options.cdn The cdn content to use.
  */
 
 class Main extends EventEmitter {
@@ -37,6 +41,18 @@ class Main extends EventEmitter {
 
 			bandwith: {
 				value: options.bandwith || { incoming: 0, outgoing: 0 }
+      },
+
+      itemsDatHash: {
+        value: this.getHash(options.location || 'items.dat')
+      },
+
+      itemsDat: {
+        value: this.buildItemsDatabase(options.location || 'items.dat')
+      },
+
+      cdn: {
+        value: options.cdn || "0098/CDNContent59/cache/"
       }
 		});
 	}
@@ -100,14 +116,21 @@ class Main extends EventEmitter {
 
   /**
    * Creates a packet.
-   * @returns {Buffer}
+   * @param {String} asdf The header of the packet
+   * @param {Number} size The size to allocate for the buffer/packet. 
+   * @returns {Object}
    */
   
-  createPacket() {
-    const asdf = "0400000001000000FFFFFFFF00000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+  createPacket(asdf, size) {
+    if (!asdf) 
+      asdf = "0400000001000000FFFFFFFF00000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    
+    if (!size)
+      size = 61;
+  
     const p = {};
   
-    let buffer = Buffer.alloc(61);
+    let buffer = Buffer.alloc(size);
   
     for (let i = 0; i < asdf.length; i +=2) {
       let x = parseInt(asdf[i], 16);
@@ -116,9 +139,9 @@ class Main extends EventEmitter {
   
       buffer[i / 2] = x;
     }
-    
+  
     p.data = buffer;
-    p.len = 61;
+    p.len = size;
     p.indexes = 0;
   
     return p;
@@ -154,6 +177,80 @@ class Main extends EventEmitter {
     p.indexes = packet.indexes;
     return p;
   }
+
+  /**
+   * Appends an Number to the packet
+   * @param {Object} packet Packet Data
+   * @param {Number} val The value/number to add
+   * @returns {Object} Packet data
+   */
+  
+  appendInt(packet, val) {
+    let p = {}	
+  
+    let index = Buffer.alloc(1);
+    index.writeUIntLE(packet.indexes, 0, 1);
+    let v = Buffer.alloc(4);
+    v.writeUInt32LE(val);
+  
+    let buffers = Buffer.concat([
+      packet.data,
+      index,
+      Buffer.from([0x09]),
+      v
+    ]);
+  
+    packet.indexes++;
+  
+    p.data = buffers;
+    p.len = p.data.length;
+    p.indexes = packet.indexes;
+    return p;
+  }
+
+  /**
+   * Gets the hash of the items.dat
+   * @param {String} location The location of the items.dat file.
+   * @returns {Number}
+   */
+
+  getHash(location) {
+    let h = 0x55555555;
+    let file;
+    
+    try {
+      file = readFileSync(location);
+    } catch(e) {
+      throw new Error("Can't open items.dat, maybe it's not there?");
+    }
+
+	  for (let i = 0; i < file.length; i++) {
+		  h = (h >>> 27) + (h << 5);
+	  }
+
+	  return h;
+  }
+
+  /**
+   * Builds the item database
+   * @param {String} location The location of the items.dat file.
+   * @returns {Buffer}
+   */
+
+  buildItemsDatabase(location) {
+    let file;
+    
+    try {
+      file = readFileSync(location);
+    } catch(e) {
+      throw new Error("Can't open items.dat, maybe it's not there?");
+    }
+
+    let buf = this.createPacket("0400000010000000FFFFFFFF000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 60 + file.length);
+  
+    buf.data.writeUInt32LE(file.length, 56);
+    return buf.data;
+  }	
 };
 
 module.exports = Main;

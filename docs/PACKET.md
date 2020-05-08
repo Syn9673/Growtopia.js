@@ -6,22 +6,35 @@ Methods for sending/using/ packets.
 **Kind**: global class
 
 * [Packet](#Packet)
+    * [.sendStringPacket(peerid, buffer)](#Packet+sendStringPacket) ⇒ <code>undefined</code>
     * [.sendRawPacket(peerid, buffer)](#Packet+sendRawPacket) ⇒ <code>undefined</code>
     * [.log(peerid, message)](#Packet+log) ⇒ <code>undefined</code>
     * [.sendQuit(peerid)](#Packet+sendQuit) ⇒ <code>undefined</code>
     * [.sendPacket(peerid, packet)](#Packet+sendPacket) ⇒ <code>undefined</code>
 
-<a name="Packet+sendRawPacket"></a>
+<a name="Packet+sendStringPacket"></a>
 
-### packet.sendRawPacket(peerid, buffer) ⇒ <code>undefined</code>
-Sends a raw packet to the server
+### packet.sendStringPacket(peerid, buffer) ⇒ <code>undefined</code>
+Sends strings to peer
 
 **Kind**: instance method of [<code>Packet</code>](#Packet)
 
 | Param | Type | Description |
 | --- | --- | --- |
 | peerid | <code>String</code> | The id of the peer |
-| buffer | <code>Buffer</code> | The buffer to send |
+| buffer | <code>String</code> | The string to send |
+
+<a name="Packet+sendRawPacket"></a>
+
+### packet.sendRawPacket(peerid, buffer) ⇒ <code>undefined</code>
+Sends packet/buffer to peer
+
+**Kind**: instance method of [<code>Packet</code>](#Packet)
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peerid | <code>String</code> | The id of the peer |
+| buffer | <code>Buffer</code> | The buffer/packet to send |
 
 <a name="Packet+log"></a>
 

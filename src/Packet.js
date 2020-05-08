@@ -9,14 +9,25 @@ class Packet {
   }
 
   /**
-   * Sends a raw packet to the server
+   * Sends strings to peer
    * @param {String} peerid The id of the peer
-   * @param {Buffer} buffer The buffer to send
+   * @param {String} buffer The string to send
+   * @returns {undefined}
+   */
+
+  sendStringPacket(peerid, string) {
+    return this.#main.getModule().Packets.send(peerid, string);
+  }
+
+  /**
+   * Sends packet/buffer to peer
+   * @param {String} peerid The id of the peer
+   * @param {Buffer} buffer The buffer/packet to send 
    * @returns {undefined}
    */
 
   sendRawPacket(peerid, buffer) {
-    return this.#main.getModule().Packets.send(peerid, buffer.toString());
+    return this.#main.getModule().Packets.sendRawPacket(peerid, buffer);
   }
 
   /**
