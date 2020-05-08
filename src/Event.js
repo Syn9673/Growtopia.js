@@ -25,7 +25,8 @@ module.exports = {
 
     if (dataMap.has('requestedName') || dataMap.has('tankIDName')) {
       let user = dataMap.get('tankIDName') || dataMap.get('requestedName');
-      main.getModule().Packets.log(peerid, `Hello \`2${user}\`o. The server is currently \`4in development\`o. Please wait for future updates.`,  main.createPacket().data);
+      let packet = main.appendString(main.appendString(main.createPacket(), "OnConsoleMessage"), `Hello \`2${user}\`o. The server is currently \`4in development\`o. Please wait for future updates.`)
+      main.getModule().Packets.sendPacket(peerid, packet.data, packet.len, packet.indexes);
     }
   }
 };

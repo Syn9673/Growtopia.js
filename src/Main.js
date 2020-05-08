@@ -105,6 +105,8 @@ class Main extends EventEmitter {
   
   createPacket() {
     const asdf = "0400000001000000FFFFFFFF00000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    const p = {};
+  
     let buffer = Buffer.alloc(61);
   
     for (let i = 0; i < asdf.length; i +=2) {
@@ -114,13 +116,42 @@ class Main extends EventEmitter {
   
       buffer[i / 2] = x;
     }
-
-    const p = {};
-
-    p.data = buffer;
-    p.length = 61;
-    p.indexes = 0;
     
+    p.data = buffer;
+    p.len = 61;
+    p.indexes = 0;
+  
+    return p;
+  }
+
+  /**
+   * Appends a String to the packet
+   * @param {Object} packet Packet data
+   * @param {String} str The string to append
+   * @returns {Object} Packet data
+   */
+
+  appendString(packet, str) {
+    let p = {}	
+  
+    let index = Buffer.alloc(1);
+    index.writeUIntLE(packet.indexes, 0, 1);
+    let strLen = Buffer.alloc(4);
+    strLen.writeUInt32LE(str.length);
+  
+    let buffers = Buffer.concat([
+      packet.data,
+      index,
+      Buffer.from([0x02]),
+      strLen,
+      Buffer.from(str)
+    ]);
+  
+    packet.indexes++;
+  
+    p.data = buffers;
+    p.len = p.data.length;
+    p.indexes = packet.indexes;
     return p;
   }
 };

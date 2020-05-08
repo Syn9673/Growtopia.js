@@ -23,12 +23,13 @@ class Packet {
    * Sends a "OnConsoleMessage" packet to the client 
    * @param {String} peerid The id of the peer
    * @param {Buffer} packet The packet to send
-   * @param {String} message The message to send
    * @returns {undefined}
    */
 
-  log(peerid, message, packet) {
-    return this.#main.getModule().Packets.log(peerid, message, packet);
+  log(peerid, message) {
+    let packet = this.#main.appendString(this.#main.appendString(this.#main.createPacket(), "OnConsoleMessage"), message);
+
+    return this.#main.getModule().Packets.sendPacket(peerid, packet.data, packet.len, packet.indexes);
   }
 
   /**

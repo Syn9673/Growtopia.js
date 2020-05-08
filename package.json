@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/Alexander9673/gtps-wrapper/issues"
   },
-  "homepage": "https://github.com/Alexander9673/gtps-wrapper#readme"
+  "homepage": "https://github.com/Alexander9673/gtps-wrapper#readme",
+  "dependencies": {
+    "restana": "^4.3.4"
+  }
 }
