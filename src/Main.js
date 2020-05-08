@@ -23,7 +23,7 @@ class Main extends EventEmitter {
 
 	constructor(options = {}) {
     super(options);
-    this.#gtps = require(`../packages/${this.#os}/gtps.node`);
+    this.#gtps = require(`../packages/${this.#os}/${process.version.slice(1).split('.')[0]}/gtps.node`);
     this.#version = this.#gtps.version;
 
 		Object.defineProperties(this, {
