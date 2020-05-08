@@ -7,8 +7,9 @@ Methods for sending/using/ packets.
 
 * [Packet](#Packet)
     * [.sendRawPacket(peerid, buffer)](#Packet+sendRawPacket) ⇒ <code>undefined</code>
-    * [.log(peerid, packet, message)](#Packet+log) ⇒ <code>undefined</code>
+    * [.log(peerid, message)](#Packet+log) ⇒ <code>undefined</code>
     * [.sendQuit(peerid)](#Packet+sendQuit) ⇒ <code>undefined</code>
+    * [.sendPacket(peerid, packet)](#Packet+sendPacket) ⇒ <code>undefined</code>
 
 <a name="Packet+sendRawPacket"></a>
 
@@ -24,7 +25,7 @@ Sends a raw packet to the server
 
 <a name="Packet+log"></a>
 
-### packet.log(peerid, packet, message) ⇒ <code>undefined</code>
+### packet.log(peerid, message) ⇒ <code>undefined</code>
 Sends a "OnConsoleMessage" packet to the client
 
 **Kind**: instance method of [<code>Packet</code>](#Packet)
@@ -32,7 +33,6 @@ Sends a "OnConsoleMessage" packet to the client
 | Param | Type | Description |
 | --- | --- | --- |
 | peerid | <code>String</code> | The id of the peer |
-| packet | <code>Buffer</code> | The packet to send |
 | message | <code>String</code> | The message to send |
 
 <a name="Packet+sendQuit"></a>
@@ -45,3 +45,15 @@ Disconnects the peer.
 | Param | Type | Description |
 | --- | --- | --- |
 | peerid | <code>String</code> | The id of the peer |
+
+<a name="Packet+sendPacket"></a>
+
+### packet.sendPacket(peerid, packet) ⇒ <code>undefined</code>
+Sends a created packet to the peer
+
+**Kind**: instance method of [<code>Packet</code>](#Packet)
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peerid | <code>String</code> | The id of the peer |
+| packet | <code>Object</code> | The packet to send |

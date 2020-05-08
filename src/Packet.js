@@ -22,7 +22,7 @@ class Packet {
   /**
    * Sends a "OnConsoleMessage" packet to the client 
    * @param {String} peerid The id of the peer
-   * @param {Buffer} packet The packet to send
+   * @param {String} message The message to send
    * @returns {undefined}
    */
 
@@ -39,7 +39,18 @@ class Packet {
    */
 
   sendQuit(peerid) {
-    return this.#main.getModule.Packets.sendQuit(peerid);
+    return this.#main.getModule().Packets.sendQuit(peerid);
+  }
+
+  /**
+   * Sends a created packet to the peer
+   * @param {String} peerid The id of the peer
+   * @param {Object} packet The packet to send
+   * @returns {undefined}
+   */
+
+  sendPacket(peerid, packet) {
+    return this.#main.getModule().Packets.sendPacket(peerid, packet.data, packet.len, packet.indexes);
   }
 };
 

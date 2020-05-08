@@ -25,6 +25,7 @@ The Main Class is the file that you would require to handle everything.
     * [.GetPacketType(packet)](#Main+GetPacketType) ⇒ <code>Number</code>
     * [.GetMessage(packet)](#Main+GetMessage) ⇒ <code>String</code>
     * [.createPacket()](#Main+createPacket) ⇒ <code>Buffer</code>
+    * [.appendString(packet, str)](#Main+appendString) ⇒ <code>Object</code>
 
 <a name="Main+version"></a>
 
@@ -80,3 +81,15 @@ Decodes the packet if it was encoded with raw text.
 Creates a packet.
 
 **Kind**: instance method of [<code>Main</code>](#Main)
+<a name="Main+appendString"></a>
+
+### main.appendString(packet, str) ⇒ <code>Object</code>
+Appends a String to the packet
+
+**Kind**: instance method of [<code>Main</code>](#Main)
+**Returns**: <code>Object</code> - Packet data
+
+| Param | Type | Description |
+| --- | --- | --- |
+| packet | <code>Object</code> | Packet data |
+| str | <code>String</code> | The string to append |
