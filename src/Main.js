@@ -1,5 +1,6 @@
 const { EventEmitter } = require('events');
 const { readFileSync } = require('fs');
+const WorldItem = require('./structs/WorldItem');
 
 /**
  * The Main Class is the file that you would require to handle everything.
@@ -21,26 +22,29 @@ class Main extends EventEmitter {
   #isInitialized;
   #version;
 
-	constructor(options = {}) {
+  constructor(options = {}) {
     super(options);
     this.#gtps = require(`../packages/${this.#os}/${process.version.slice(1).split('.')[0]}/gtps.node`);
     this.#version = this.#gtps.version;
 
-		Object.defineProperties(this, {
-			port: {
-				value: options.port || 17091
-			},
+    Object.defineProperties(this, {
+      port: {
+        value: options.port || 17091
+      },
 
-			channels: {
-				value: options.channels || 32
-			},
+      channels: {
+        value: options.channels || 32
+      },
 
-			peers: {
-				value: options.peers || 2
-			},
+      peers: {
+        value: options.peers || 2
+      },
 
-			bandwith: {
-				value: options.bandwith || { incoming: 0, outgoing: 0 }
+      bandwith: {
+        value: options.bandwith || {
+          incoming: 0,
+          outgoing: 0
+        }
       },
 
       itemsDatHash: {
@@ -52,26 +56,34 @@ class Main extends EventEmitter {
       },
 
       cdn: {
-        value: options.cdn || "0098/CDNContent59/cache/"
+        value: options.cdn || "0098/CDNContent61/cache/"
+      },
+
+      worlds: {
+        value: new Map()
+      },
+
+      players: {
+        value: new Map()
       }
-		});
-	}
+    });
+  }
 
-	/**
+  /**
    * Returns the current version of node-gtps you're running.
-	 * @readonly
-	 */
+   * @readonly
+   */
 
-	get version() {
-		return this.#version;
+  get version() {
+    return this.#version;
   }
 
   /**
    * Returns the value of the private variable "isInitialized"
    * @readonly
    */
-  
-  get isInitialized(){
+
+  get isInitialized() {
     return this.#isInitialized;
   }
 
@@ -108,10 +120,9 @@ class Main extends EventEmitter {
    * @param {ArrayBuffer} packet The packet you received.
    * @returns {String}
    */
-  
+
   GetMessage(packet) {
-    return Buffer.from(packet).toString(undefined, 4)
-    .replace('\0', '');
+    return Buffer.from(packet).toString('utf-8', 4);
   }
 
   /**
@@ -120,30 +131,30 @@ class Main extends EventEmitter {
    * @param {Number} size The size to allocate for the buffer/packet. 
    * @returns {Object}
    */
-  
+
   createPacket(asdf, size) {
-    if (!asdf) 
+    if (!asdf)
       asdf = "0400000001000000FFFFFFFF00000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-    
+
     if (!size)
       size = 61;
-  
+
     const p = {};
-  
+
     let buffer = Buffer.alloc(size);
-  
-    for (let i = 0; i < asdf.length; i +=2) {
+
+    for (let i = 0; i < asdf.length; i += 2) {
       let x = parseInt(asdf[i], 16);
       x = x << 4;
       x += parseInt(asdf[i + 1], 16);
-  
+
       buffer[i / 2] = x;
     }
-  
+
     p.data = buffer;
     p.len = size;
     p.indexes = 0;
-  
+
     return p;
   }
 
@@ -155,13 +166,13 @@ class Main extends EventEmitter {
    */
 
   appendString(packet, str) {
-    let p = {}	
-  
+    let p = {}
+
     let index = Buffer.alloc(1);
-    index.writeUIntLE(packet.indexes, 0, 1);
+    index.writeIntLE(packet.indexes, 0, 1);
     let strLen = Buffer.alloc(4);
-    strLen.writeUInt32LE(str.length);
-  
+    strLen.writeIntLE(str.length, 0, 4);
+
     let buffers = Buffer.concat([
       packet.data,
       index,
@@ -169,9 +180,9 @@ class Main extends EventEmitter {
       strLen,
       Buffer.from(str)
     ]);
-  
+
     packet.indexes++;
-  
+
     p.data = buffers;
     p.len = p.data.length;
     p.indexes = packet.indexes;
@@ -184,19 +195,49 @@ class Main extends EventEmitter {
    * @param {Number} val The value/number to add
    * @returns {Object} Packet data
    */
-  
+
   appendInt(packet, val) {
-    let p = {}	
-  
+    let p = {}
+
     let index = Buffer.alloc(1);
-    index.writeUIntLE(packet.indexes, 0, 1);
+    index.writeIntLE(packet.indexes, 0, 1);
     let v = Buffer.alloc(4);
-    v.writeUInt32LE(val);
-  
+    v.writeIntLE(val, 0, 4);
+
     let buffers = Buffer.concat([
       packet.data,
       index,
       Buffer.from([0x09]),
+      v
+    ]);
+
+    packet.indexes++;
+
+    p.data = buffers;
+    p.len = p.data.length;
+    p.indexes = packet.indexes;
+    return p;
+  }
+
+  /**
+   * Same as appendInt, but this uses the byte value of 0x05 after the index
+   * @param {Object} packet The packet to append to
+   * @param {Number} val The value to append.
+   * @returns {Object} packet data.
+   */
+
+  appendIntx(packet, val) {
+    let p = {}	
+  
+    let index = Buffer.alloc(1);
+    index.writeIntLE(packet.indexes, 0, 1);
+    let v = Buffer.alloc(4);
+    v.writeInt32LE(val);
+  
+    let buffers = Buffer.concat([
+      packet.data,
+      index,
+      Buffer.from([0x05]),
       v
     ]);
   
@@ -209,6 +250,33 @@ class Main extends EventEmitter {
   }
 
   /**
+   * Adds the last thing to end a packet and to be able to have the correct format.
+   * @param {Object} packet The packet you created or used append with.
+   * @returns {Object} Packet data
+   */
+
+  packetEnd(packet) {
+    let p = {};
+    let n = Buffer.alloc(packet.len + 1);
+    
+    for (let i = 0; i < packet.len; i++) {
+      n[i] = packet.data[i];
+    }
+  
+    let zero = 0;
+    n.writeIntLE(zero, n.length - 1, 1);
+  
+    n.writeIntLE(packet.indexes, 56, 1);
+    n.writeIntLE(packet.indexes, 60, 1);
+  
+    p.data = n;
+    p.len = n.length;
+    p.indexes = packet.indexes;
+  
+    return p;
+  }
+
+  /**
    * Gets the hash of the items.dat
    * @param {String} location The location of the items.dat file.
    * @returns {Number}
@@ -217,18 +285,18 @@ class Main extends EventEmitter {
   getHash(location) {
     let h = 0x55555555;
     let file;
-    
+
     try {
       file = readFileSync(location);
-    } catch(e) {
+    } catch (e) {
       throw new Error("Can't open items.dat, maybe it's not there?");
     }
 
-	  for (let i = 0; i < file.length; i++) {
-		  h = (h >>> 27) + (h << 5);
-	  }
+    for (let i = 0; i < file.length; i++) {
+      h = (h >>> 27) + (h << 5);
+    }
 
-	  return h;
+    return h;
   }
 
   /**
@@ -239,18 +307,120 @@ class Main extends EventEmitter {
 
   buildItemsDatabase(location) {
     let file;
-    
+
     try {
       file = readFileSync(location);
-    } catch(e) {
+    } catch (e) {
       throw new Error("Can't open items.dat, maybe it's not there?");
     }
 
     let buf = this.createPacket("0400000010000000FFFFFFFF000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 60 + file.length);
-  
-    buf.data.writeUInt32LE(file.length, 56);
+
+    buf.data.writeIntLE(file.length, 56, 4);
+    for (let i = 0; i < file.length; i++) {
+      buf.data[60 + i] = file[i];
+    }
+
     return buf.data;
-  }	
+  }
+
+  /**
+   * Sends a world to load
+   * @param {String} peerid The id of the peer joining 
+   * @param {Object} world The world to send
+   * @returns {undefined}
+   */
+
+  sendWorld(peerid, world) {
+    let name = world.name.toUpperCase();
+    let x = world.width;
+    let y = world.height;
+    let square = x * y;
+    let nameLen = name.length;
+  
+    let total = 78 + nameLen + square + 24 + (square * 8);
+    let data = Buffer.alloc(total);
+  
+    data.writeIntLE(4, 0, 1);
+    data.writeIntLE(4, 4, 1);
+    data.writeIntLE(8, 16, 1);
+    data.writeIntLE(-1, 8, 4);
+    data.writeIntLE(nameLen, 66, 1);
+    data.write(name, 68, nameLen);
+    data.writeIntLE(x, 68 + nameLen, 1);
+    data.writeIntLE(y, 72 + nameLen, 1);
+    data.writeIntLE(square, 76 + nameLen, 2);
+  
+    let mempos = 80 + nameLen;
+  
+    for (let i = 0; i < square; i++) {
+      data.writeIntLE(world.items[i].foreground, mempos, 2);
+      data.writeIntLE(world.items[i].background, mempos + 2, 2);
+      data.writeIntLE(0, mempos + 4, 4);
+  
+      mempos += 8;
+    }
+  
+    this.worlds.set(name, { data, len: total });
+  
+    this.#gtps.Packets.sendPacket(peerid, data, total);
+  }
+
+  /**
+   * Generates a world.
+   * @param {String} name Name of the world to generate
+   * @param {Number} width The width of the world
+   * @param {Number} height The height of the world
+   * @returns {Object} World data generated
+   */
+
+  generateWorld(name, width, height) {
+    let world = {};
+    world.name = name;
+    world.width = width;
+    world.height = height;
+    world.items = [];
+  
+    for (let i = 0; i < world.width*world.height; i++)
+    {
+      world.items[i] = new WorldItem();
+  
+      if (i >= 3800 && i < 5400 && !(Math.floor(Math.random() * 50))) { world.items[i].foreground = 10; }
+      else if (i >= 3700 && i < 5400) {
+        if (i > 5000) {
+          if (i % 7 == 0) { world.items[i].foreground = 4;}
+          else { world.items[i].foreground = 2; }
+        }
+        else { world.items[i].foreground = 2; }
+      }
+      else if (i >= 5400) { world.items[i].foreground = 8; }
+      if (i >= 3700)
+        world.items[i].background = 14;
+      if (i >= 3600 && i<3700)
+        world.items[i].foreground = 0;
+      if (i == 3750)
+        world.items[i].foreground = 8;
+    }
+  
+    return world;
+  }
 };
+
+// DOCS PURPOSES
+/**
+ * Connect Event
+ * 
+ * @event Main#connect
+ * @property {String} peerid The id of the peer that connected
+ */
+
+/**
+ * Receive Event
+ * Emitted when you receive data
+ * 
+ * @event Main#receive
+ * @property {Map} packet A map of received packets from the client.
+ * @property {String} peerid The id of the peer that send that packet.
+ */
 
 module.exports = Main;

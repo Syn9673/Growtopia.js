@@ -1,7 +1,7 @@
 {
-  "name": "gtps-wrapper",
-  "version": "0.2.0",
-  "description": "This is a wrapper for the [Growtopia Noob's Private Server](https://github.com/growtopianoobs/growtopiaserver).  \r But it uses it's own C++ Code, most structs are from his code, handling of event types can be handled in either the C++ Binding or here.",
+  "name": "growtopia.js",
+  "version": "0.3.0",
+  "description": "The first ever growtopia private server coded in nodejs.",
   "main": "index.js",
   "directories": {
     "doc": "docs"

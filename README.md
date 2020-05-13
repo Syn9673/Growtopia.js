@@ -1,6 +1,6 @@
 # GTPS Wrapper
-This is a wrapper for the [Growtopia Noob's Private Server](https://github.com/growtopianoobs/growtopiaserver).  
-But it uses it's own C++ Code, some structs are from his code, handling of event types can be handled in either the C++ Binding or here. While packet encryption is mostly done here as well, the only encryption for the packets which is in the C++ Binding is the `packetEnd` function, but i'm looking forward to move it to nodejs.
+Growtopia.js is the first ever Growtopia Private Server coded with NodeJS. Inspired by [Growtopia Noob's Private Server](https://github.com/GrowtopiaNoobs/GrowtopiaServer)
+This uses it's own C++ Code, handling of event types can be handled in either the C++ Binding or here. Packet creation, send world, generate world, Packet decode is also done on nodejs. Packet sending is done in C++
 
 ## Running
 You would have to make a sepearate .js file and copy the example below.  
@@ -17,7 +17,7 @@ const Server = new Main({
     incoming: 0, // note: this is the default value, you can not include this if you'd like.
     outgoing: 0 // note: this is the default value, you can not include this if you'd like.
   },
-  cdn: '0098/CDNContent59/cache/' // note: this is the default value, you can not include this if you'd like.
+  cdn: '0098/CDNContent61/cache/' // note: this is the default value, you can not include this if you'd like.
 });
 
 const HostHandler = new Host(Server);

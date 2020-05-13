@@ -30,8 +30,14 @@ The Main Class is the file that you would require to handle everything.
     * [.createPacket(asdf, size)](#Main+createPacket) ⇒ <code>Object</code>
     * [.appendString(packet, str)](#Main+appendString) ⇒ <code>Object</code>
     * [.appendInt(packet, val)](#Main+appendInt) ⇒ <code>Object</code>
+    * [.appendIntx(packet, val)](#Main+appendIntx) ⇒ <code>Object</code>
+    * [.packetEnd(packet)](#Main+packetEnd) ⇒ <code>Object</code>
     * [.getHash(location)](#Main+getHash) ⇒ <code>Number</code>
     * [.buildItemsDatabase(location)](#Main+buildItemsDatabase) ⇒ <code>Buffer</code>
+    * [.sendWorld(peerid, world)](#Main+sendWorld) ⇒ <code>undefined</code>
+    * [.generateWorld(name, width, height)](#Main+generateWorld) ⇒ <code>Object</code>
+    * ["connect"](#Main+event_connect)
+    * ["receive"](#Main+event_receive)
 
 <a name="Main+version"></a>
 
@@ -119,6 +125,31 @@ Appends an Number to the packet
 | packet | <code>Object</code> | Packet Data |
 | val | <code>Number</code> | The value/number to add |
 
+<a name="Main+appendIntx"></a>
+
+### main.appendIntx(packet, val) ⇒ <code>Object</code>
+Same as appendInt, but this uses the byte value of 0x05 after the index
+
+**Kind**: instance method of [<code>Main</code>](#Main)
+**Returns**: <code>Object</code> - packet data.
+
+| Param | Type | Description |
+| --- | --- | --- |
+| packet | <code>Object</code> | The packet to append to |
+| val | <code>Number</code> | The value to append. |
+
+<a name="Main+packetEnd"></a>
+
+### main.packetEnd(packet) ⇒ <code>Object</code>
+Adds the last thing to end a packet and to be able to have the correct format.
+
+**Kind**: instance method of [<code>Main</code>](#Main)
+**Returns**: <code>Object</code> - Packet data
+
+| Param | Type | Description |
+| --- | --- | --- |
+| packet | <code>Object</code> | The packet you created or used append with. |
+
 <a name="Main+getHash"></a>
 
 ### main.getHash(location) ⇒ <code>Number</code>
@@ -140,3 +171,54 @@ Builds the item database
 | Param | Type | Description |
 | --- | --- | --- |
 | location | <code>String</code> | The location of the items.dat file. |
+
+<a name="Main+sendWorld"></a>
+
+### main.sendWorld(peerid, world) ⇒ <code>undefined</code>
+Sends a world to load
+
+**Kind**: instance method of [<code>Main</code>](#Main)
+
+| Param | Type | Description |
+| --- | --- | --- |
+| peerid | <code>String</code> | The id of the peer joining |
+| world | <code>Object</code> | The world to send |
+
+<a name="Main+generateWorld"></a>
+
+### main.generateWorld(name, width, height) ⇒ <code>Object</code>
+Generates a world.
+
+**Kind**: instance method of [<code>Main</code>](#Main)
+**Returns**: <code>Object</code> - World data generated
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>String</code> | Name of the world to generate |
+| width | <code>Number</code> | The width of the world |
+| height | <code>Number</code> | The height of the world |
+
+<a name="Main+event_connect"></a>
+
+### "connect"
+Connect Event
+
+**Kind**: event emitted by [<code>Main</code>](#Main)
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| peerid | <code>String</code> | The id of the peer that connected |
+
+<a name="Main+event_receive"></a>
+
+### "receive"
+Emitted when you receive data
+
+**Kind**: event emitted by [<code>Main</code>](#Main)
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| packet | <code>Map</code> | A map of received packets from the client. |
+| peerid | <code>String</code> | The id of the peer that send that packet. |

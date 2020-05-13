@@ -7,10 +7,9 @@ Methods for sending/using/ packets.
 
 * [Packet](#Packet)
     * [.sendStringPacket(peerid, buffer)](#Packet+sendStringPacket) ⇒ <code>undefined</code>
-    * [.sendRawPacket(peerid, buffer)](#Packet+sendRawPacket) ⇒ <code>undefined</code>
     * [.log(peerid, message)](#Packet+log) ⇒ <code>undefined</code>
     * [.sendQuit(peerid)](#Packet+sendQuit) ⇒ <code>undefined</code>
-    * [.sendPacket(peerid, packet)](#Packet+sendPacket) ⇒ <code>undefined</code>
+    * [.sendPacket(peerid, packet, [length])](#Packet+sendPacket) ⇒ <code>undefined</code>
 
 <a name="Packet+sendStringPacket"></a>
 
@@ -23,18 +22,6 @@ Sends strings to peer
 | --- | --- | --- |
 | peerid | <code>String</code> | The id of the peer |
 | buffer | <code>String</code> | The string to send |
-
-<a name="Packet+sendRawPacket"></a>
-
-### packet.sendRawPacket(peerid, buffer) ⇒ <code>undefined</code>
-Sends packet/buffer to peer
-
-**Kind**: instance method of [<code>Packet</code>](#Packet)
-
-| Param | Type | Description |
-| --- | --- | --- |
-| peerid | <code>String</code> | The id of the peer |
-| buffer | <code>Buffer</code> | The buffer/packet to send |
 
 <a name="Packet+log"></a>
 
@@ -61,7 +48,7 @@ Disconnects the peer.
 
 <a name="Packet+sendPacket"></a>
 
-### packet.sendPacket(peerid, packet) ⇒ <code>undefined</code>
+### packet.sendPacket(peerid, packet, [length]) ⇒ <code>undefined</code>
 Sends a created packet to the peer
 
 **Kind**: instance method of [<code>Packet</code>](#Packet)
@@ -70,3 +57,4 @@ Sends a created packet to the peer
 | --- | --- | --- |
 | peerid | <code>String</code> | The id of the peer |
 | packet | <code>Object</code> | The packet to send |
+| [length] | <code>Number</code> | OPTIONAL: The length to give, by default it will use the packet's length. |
