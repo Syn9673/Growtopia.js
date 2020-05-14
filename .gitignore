@@ -1,3 +1,10 @@
+
+# Debugging script
+run.js
+
+# Item database
+items.dat
+
 # Logs
 logs
 *.log
