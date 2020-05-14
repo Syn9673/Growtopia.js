@@ -23,7 +23,7 @@ module.exports = {
     const decodedPacket = main.GetMessage(packet);
     const packetType = main.GetPacketType(packet);
     const dataMap = new Map();
-    
+
     if (packetType === 4) {
       let struct = main.GetStructPointerFromTankPacket(packet);
       let pMov = main.unpackPlayerMoving(packet);
@@ -60,7 +60,7 @@ module.exports = {
                 main.createPacket(),
                 "OnRequestWorldSelectMenu"),
               text));
-  
+
           main.getModule().Packets.sendPacket(peerid, p.data, p.len);
           break;
         }
@@ -85,15 +85,15 @@ module.exports = {
           let index = value.indexOf('\0')
           if (index > -1)
             value = value.substr(0, index);
-              
+
           dataMap.set(vsplit.split('|')[0], value)
         }
       }
 
       main.emit('receive', dataMap, peerid);
-  
+
       if (dataMap.has('action')) {
-        switch(dataMap.get('action')) {  
+        switch(dataMap.get('action')) {
           case 'store': {}
 
           case 'friends': {}
@@ -128,7 +128,7 @@ module.exports = {
           case 'join_request': {
             let world = main.worlds.get(dataMap.get('name').toUpperCase());
 
-            if (world) {    
+            if (world) {
               let player = main.players.get(peerid);
               player.currentWorld = world.name
 
@@ -176,7 +176,7 @@ type|local
             main.getModule().Packets.sendPacket(peerid, packet.data, packet.len);
             break;
           }
-  
+
           case 'enter_game': {
             let text = "default|NODEJS\nadd_button|Showing: `wWorlds``|_catselect_|0.6|3529161471|\n";
             let worlds = [...main.worlds.keys()];
@@ -191,7 +191,7 @@ type|local
                   main.createPacket(),
                   "OnRequestWorldSelectMenu"),
                 text));
-  
+
             main.getModule().Packets.sendPacket(peerid, p.data, p.len);
 
             p = main.packetEnd(
@@ -199,7 +199,29 @@ type|local
                 main.appendString(
                   main.createPacket(),
                   "OnConsoleMessage"),
-                "Server by `2_alexander#9673`o. Discord: https://discord.gg/3NrVX8s"));
+                "`oWelcome to: `wGrowtopia.js!`o Discord: `whttps://discord.gg/3NrVX8s"));
+
+            main.getModule().Packets.sendPacket(peerid, p.data, p.len);
+
+            let peers = [...main.players.keys()];
+
+            let staff = 0;
+
+            peers.forEach((id) => {
+                var playername = main.players.get(id).displayName.replace(/`./g, "");
+                if (playername.charAt(0) == "@") {
+                    staff += 1;
+                }
+            })
+
+            let string = `\`oThere are \`w${peers.length}\`o player online. \`w${staff}\`o of them are a staff member.`;
+
+            p = main.packetEnd(
+              main.appendString(
+                main.appendString(
+                  main.createPacket(),
+                  "OnConsoleMessage"),
+                string));
 
             main.getModule().Packets.sendPacket(peerid, p.data, p.len);
             break;
@@ -266,7 +288,7 @@ type|local
           }
         }
       }
-  
+
       if (dataMap.has('requestedName') || dataMap.has('tankIDName')) {
         let player = new PlayerInfo();
         let keys = [...dataMap.keys()]
@@ -320,7 +342,7 @@ type|local
                 main.cdn),
               "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster"),
             "proto=84|choosemusic=audio/mp3/about_theme.mp3|active_holiday=0|server_tick=226933875|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|"))
-  
+
         main.getModule().Packets.sendPacket(peerid, p.data, p.len);
       }
     }
