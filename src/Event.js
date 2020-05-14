@@ -319,6 +319,21 @@ type|local
 
         main.players.set(peerid, player);
 
+        var playername = player.displayName.replace(/`./g, "");
+
+        if(!playername.match(/^[a-zA-Z0-9]+$/) || playername.length > 12) {
+          let p = main.packetEnd(
+            main.appendString(
+              main.appendString(
+                main.createPacket(),
+                "OnConsoleMessage"),
+              "Malformed username. Length is bigger than 12 or it's not alphanumeric."))
+
+          main.getModule().Packets.sendPacket(peerid, p.data, p.len);
+
+          return main.getModule().Packets.quit(peerid);
+        }
+
         let p = main.packetEnd(
           main.appendString(
             main.appendString(
