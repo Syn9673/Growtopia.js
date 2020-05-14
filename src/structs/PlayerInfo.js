@@ -1,16 +1,16 @@
 class PlayerInfo {
 	constructor() {
-		this.netID;
-		this.tankIDName;
-		this.tankIDPass;
-		this.requestedName;
-		this.displayName;
-		this.country;
-		this.currentWorld;
-		this.x;
-		this.y;
-		this.x1;
-		this.y1;
+		this.netID = 0;
+		this.tankIDName = "";
+		this.tankIDPass = "";
+		this.requestedName = "";
+		this.displayName = "";
+		this.country = "";
+		this.currentWorld = "EXIT";
+		this.x = 1605;
+		this.y = 1150;
+		this.x1 = 0;
+		this.y1 = 0;
 	}
 };
 

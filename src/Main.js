@@ -1,6 +1,9 @@
 const { EventEmitter } = require('events');
-const { readFileSync } = require('fs');
+const { readFileSync, readdirSync, statSync } = require('fs');
 const WorldItem = require('./structs/WorldItem');
+const WorldInfo = require('./structs/WorldInfo');
+const PlayerMoving = require('./structs/PlayerMoving');
+let netID = 0;
 
 /**
  * The Main Class is the file that you would require to handle everything.
@@ -21,6 +24,17 @@ class Main extends EventEmitter {
   #os = process.platform;
   #isInitialized;
   #version;
+  #loadCommands = function() {
+    let files = readdirSync(this.commandsDir)
+    .filter(file => statSync(`${this.commandsDir}/${file}`).isFile() && file.endsWith('.js'));
+
+    for (let i = 0; i < files.length; i++) {
+      let file = require(`${this.commandsDir}/${files[i]}`);
+      this.commands.set(file.name, file);
+
+      console.log(`Loaded ${file.name} command`);
+    }
+  }
 
   constructor(options = {}) {
     super(options);
@@ -59,14 +73,32 @@ class Main extends EventEmitter {
         value: options.cdn || "0098/CDNContent61/cache/"
       },
 
+      commandsDir: {
+        value: options.commandsDir || `${__dirname}/commands`
+      },
+
       worlds: {
         value: new Map()
       },
 
       players: {
         value: new Map()
+      },
+
+      commands: {
+        value: new Map()
+      },
+
+      spawn: {
+        value: {
+          x: 1605,
+          y: 1150
+        }
       }
     });
+
+    this.netID = netID;
+    this.#loadCommands();
   }
 
   /**
@@ -359,9 +391,39 @@ class Main extends EventEmitter {
       data.writeIntLE(0, mempos + 4, 4);
   
       mempos += 8;
+      if (world.items[i].foreground === 6 || i === 3650) {
+        data.writeIntLE(0x01, mempos, 1)
+        data.writeIntLE(0x04, mempos + 1, 1);
+        data.writeIntLE(0x00, mempos + 2, 1);
+        data.writeIntLE(0x45, mempos + 3, 1);
+        data.writeIntLE(0x58, mempos + 4, 1);
+        data.writeIntLE(0X49, mempos + 5, 1);
+        data.writeIntLE(0x54, mempos + 6, 1);
+        data.writeIntLE(0x00, mempos + 7, 1);
+        mempos += 8;
+      }
+    }
+
+    
+
+    for (let i = 0; i < square; i++) {
+      let data = {};
+      data.packetType = 0x3;
+  
+      data.characterState = 0x0;
+      data.x = i%world.width;
+      data.y = i/world.height;
+      data.punchX = i%world.width;
+      data.punchY = i / world.width;
+      data.ySpeed = 0;
+      data.xSpeed = 0;
+      data.netID = -1;
+      data.plantingTree = world.items[i].foreground;
+  
+      this.#gtps.Packets.sendPacketRaw(peerid, 4, this.packPlayerMoving(data), 56, 0);
     }
   
-    this.worlds.set(name, { data, len: total });
+    this.worlds.set(name, { data, len: total, ...world });
   
     this.#gtps.Packets.sendPacket(peerid, data, total);
   }
@@ -375,11 +437,10 @@ class Main extends EventEmitter {
    */
 
   generateWorld(name, width, height) {
-    let world = {};
+    let world = new WorldInfo();
     world.name = name;
     world.width = width;
     world.height = height;
-    world.items = [];
   
     for (let i = 0; i < world.width*world.height; i++)
     {
@@ -396,13 +457,217 @@ class Main extends EventEmitter {
       else if (i >= 5400) { world.items[i].foreground = 8; }
       if (i >= 3700)
         world.items[i].background = 14;
-      if (i >= 3600 && i<3700)
+      if (i === 3650)
+        world.items[i].foreground = 6;
+      else if (i >= 3600 && i<3700)
         world.items[i].foreground = 0;
       if (i == 3750)
         world.items[i].foreground = 8;
     }
   
     return world;
+  }
+
+  /**
+   * Checks if two peers are in the same world
+   * @param {String} peerid The peer to compare
+   * @param {String} peerid2 The peer to compare with
+   * @returns {Boolean} If they are in the same world.
+   */
+
+  isInSameWorld(peerid, peerid2) {
+    let player = this.players.get(peerid);
+    let player2 = this.players.get(peerid2);
+
+    return (player.currentWorld === player2.currentWorld) && (player.currentWorld !== "EXIT" && player2.currentWorld !== "EXIT");
+  }
+
+  /**
+   * Sends an onSpawn to a specific peer
+   * @param {String} peer The peer to send data to.
+   * @param {String} msg The packet to send
+   * @return {undefined}
+   */
+
+  onSpawn(peer, msg) {
+    let packet = this.packetEnd(this.appendString(this.appendString(this.createPacket(), "OnSpawn"), msg));
+    return this.#gtps.Packets.sendPacket(peer, packet.data, packet.len);
+  }
+
+  /**
+   * Sends an onSpawn to every other peer in the same world as the given peer
+   * @param {String} peerid Peer that joined
+   * @returns {undefined}
+   */
+
+  onPeerConnect(peerid) {
+    let peers = [...this.players.keys()];
+
+    for (let i = 0; i < this.players.size; i++) {
+      if (this.isInSameWorld(peerid, peers[i])) {
+        if (peerid !== peers[i]) {
+          let playerInfo = this.players.get(peers[i]);
+          this.onSpawn(peerid, `spawn|avatar\nnetID|${playerInfo.netID}\nuserID|${playerInfo.netID}\ncolrect|0|0|20|30\nposXY|${playerInfo.x}|${playerInfo.y}\nname|\`\`${playerInfo.displayName}\`\`\ncountry|${playerInfo.country}\ninvis|0\nmstate|0\nsmstate|0\n`);
+        
+          playerInfo = this.players.get(peerid);
+          this.onSpawn(peers[i], `spawn|avatar\nnetID|${playerInfo.netID}\nuserID|${playerInfo.netID}\ncolrect|0|0|20|30\nposXY|${playerInfo.x}|${playerInfo.y}\nname|\`\`${playerInfo.displayName}\`\`\ncountry|${playerInfo.country}\ninvis|0\nmstate|0\nsmstate|0\n`)
+        };
+      }
+    }
+  }
+
+  /**
+   * Makes a player leave the world
+   * @param {String} peerid The id of the peer that left
+   * @returns {undefined}
+   */
+
+  sendPlayerLeave(peerid) {
+    let player = this.players.get(peerid);
+
+    if (player) {
+      let world = this.worlds.get(player.currentWorld);
+      if (world) {   
+        world.players = world.players.filter(p => p.netID !== player.netID);
+        this.worlds.set(world.name, world);
+      }
+
+      let p = this.packetEnd(
+        this.appendString(
+          this.appendString(
+            this.createPacket(),
+            "OnRemove"),
+          `netID|${player.netID}\n`));
+
+      let p2 = this.packetEnd(
+        this.appendString(
+          this.appendString(
+            this.createPacket(),
+            "OnConsoleMessage"),
+          `Player: \`w${player.displayName}\`o left.`));
+  
+      let peers = [...this.players.keys()];
+  
+      for (let i = 0; i < peers.length; i++) {
+        if (this.isInSameWorld(peerid, peers[i])) {
+          {
+            this.#gtps.Packets.sendPacket(peerid, p.data, p.len);
+            this.#gtps.Packets.sendPacket(peers[i], p.data, p.len);
+          }
+          {
+            this.#gtps.Packets.sendPacket(peers[i], p2.data, p2.len);
+          }
+        }
+      }
+
+      player.currentWorld = "EXIT";
+      this.players.set(peerid, player);
+    }
+  }
+  
+  /**
+   * Gets the Struct Pointer from the packet
+   * @param {ArrayBuffer} packet Packet from message type 4
+   * @returns {Number}
+   */
+
+  GetStructPointerFromTankPacket(packet) {
+    let p = Buffer.from(packet);
+    let len = p.length;
+  
+    let result = Buffer.alloc(len);
+  
+    if (len >= 0x3C) {
+      let packetData = p;
+      result = packetData[4];
+    }
+  
+    return result;
+  }
+
+  /**
+   * Sends player data to the server
+   * @param {String} peerid The id of the peer
+   * @param {Object} data The data to send
+   * @returns {undefined}
+   */
+
+  sendPData(peerid, data) {
+    let peers = [...this.players.keys()];
+  
+    for (let i = 0; i < peers.length; i++) {
+      if (this.isInSameWorld(peerid, peers[i])) {
+        if (peerid !== peers[i]) {
+          data.netID = this.players.get(peerid).netID;
+          this.#gtps.Packets.sendPacketRaw(peers[i], 4, this.packPlayerMoving(data), 56, 0);
+        }
+      }
+    }
+  };
+
+  /**
+   * Creates a buffer that would contain PlayerMoving data
+   * @param {Object} data PlayerMoving data to add to the buffer
+   * @returns {Buffer} The buffer that has those data
+   */
+
+  packPlayerMoving(data) {
+    let packet = Buffer.alloc(56);
+    let offsets = {
+      packetType: 0,
+      netID: 4,
+      characterState: 12,
+      plantingTree: 20,
+      x: 24,
+      y: 28,
+      xSpeed: 32,
+      ySpeed: 36,
+      punchX: 44,
+      punchY: 48
+    };
+  
+    for (let packetOffset of Object.keys(offsets)) {
+      if (packetOffset === 'x' || packetOffset === 'y' || packetOffset === 'xSpeed' || packetOffset === 'ySpeed') {
+        packet.writeFloatLE(data[packetOffset], offsets[packetOffset], 4);
+      } else {
+        packet.writeIntLE(data[packetOffset], offsets[packetOffset], 4);
+      }
+    }
+  
+    return packet;
+  }
+
+  /**
+   * Unpacks a PlayerMoving data and convert it to an object
+   * @param {ArrayBuffer} data Data received from message type 4
+   * @returns {Object} The unpacked PlayerMoving data.
+   */
+
+  unpackPlayerMoving(data) {
+    let packet = Buffer.from(data);
+    let dataStruct = new PlayerMoving();
+    let offsets = {
+      packetType: 0,
+      netID: 4,
+      characterState: 12,
+      plantingTree: 20,
+      x: 24,
+      y: 28,
+      xSpeed: 32,
+      ySpeed: 36,
+      punchX: 44,
+      punchY: 48
+    };
+  
+    for (let packetOffset of Object.keys(offsets)) {
+      if (packetOffset === 'x' || packetOffset === 'y' || packetOffset === 'xSpeed' || packetOffset === 'ySpeed') {
+        dataStruct[packetOffset] = packet.readFloatLE(offsets[packetOffset] + 4, 4);
+      } else {
+        dataStruct[packetOffset] = packet.readIntLE(offsets[packetOffset] + 4, 4);
+      }
+    }
+  
+    return dataStruct;
   }
 };
 
@@ -421,6 +686,12 @@ class Main extends EventEmitter {
  * @event Main#receive
  * @property {Map} packet A map of received packets from the client.
  * @property {String} peerid The id of the peer that send that packet.
+ */
+
+/**
+ * Disconnect Event
+ * Emitted when a player leaves the game/disconnect
+ * @property {String} peerid The id of the peer that disconnected.
  */
 
 module.exports = Main;

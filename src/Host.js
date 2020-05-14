@@ -13,6 +13,7 @@ class Host extends EventEmitter {
 
     this.on('connect', (peerid) => Event.onConnect(main, peerid));
     this.on('receive', (packet, peerid) => Event.onReceive(main, packet, peerid));
+    this.on('disconnect', (peer) => Event.onDisconnect(main));
   }
 
   /**
@@ -56,6 +57,16 @@ class Host extends EventEmitter {
     console.log(`Server now listening on port: ${this.#main.port}`);
 
     return this.#main.getModule().Host.start(this.emit.bind(this));
+  }
+
+  /**
+   * Checks if a peer is still connected
+   * @param {String} peer The peer to check if it is connected/disconnected
+   * @return {Boolean} Whether or not it is connected or not
+   */
+
+  checkIfConnected(peer) {
+    return this.#main.getModule().Host.checkIfConnected(peer);
   }
 };
 
