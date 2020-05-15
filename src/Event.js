@@ -319,7 +319,7 @@ type|local
 
         main.players.set(peerid, player);
 
-        var playername = player.displayName.replace(/`./g, "");
+        var playername = player.displayName;
 
         if(!playername.match(/^[a-zA-Z0-9]+$/) || playername.length > 12) {
           let p = main.packetEnd(
