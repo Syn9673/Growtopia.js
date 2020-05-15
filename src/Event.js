@@ -198,6 +198,15 @@ type|local
               main.appendString(
                 main.appendString(
                   main.createPacket(),
+                  "OnDialogRequest"),
+                "set_default_color|`o\n\nadd_label_with_icon|big|`wWelcome to Growtopia.js!``|left|5016|\n\nadd_spacer|small|\n\n\n\nadd_textbox|Welcome to Growtopia.js! This is built by lukewarmcats and Alexander9673!|left|n\nadd_spacer|small|\n\nend_dialog|gazette||OK|"));
+
+            main.getModule().Packets.sendPacket(peerid, p.data, p.len);
+
+            p = main.packetEnd(
+              main.appendString(
+                main.appendString(
+                  main.createPacket(),
                   "OnConsoleMessage"),
                 "`oWelcome to: `wGrowtopia.js!`o Discord: `whttps://discord.gg/3NrVX8s"));
 
