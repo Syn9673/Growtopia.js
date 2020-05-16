@@ -1,15 +1,24 @@
 module.exports = {
   name: 'info',
-  run: function(main, arguments, peerid) {
+  requiredPerms: 4,
+  run: function(main, arguments, peerid, p) {
     let player = main.players.get(peerid);
     let msg = `Your Info:\n`;
     let keys = Object.keys(player);
 
     for (let playerData of keys) {
+      if (playerData === 'temp')
+        continue;
+        
       msg += `\`o${playerData}: \`w${player[playerData]}\`o${keys.indexOf(playerData) === keys.length - 1 ? '' : '\n'}`;
     }
 
-    let packet = main.packetEnd(main.appendString(main.appendString(main.createPacket(), "OnConsoleMessage"), msg));
-    main.getModule().Packets.sendPacket(peerid, packet.data, packet.len);
+    p.create()
+      .string('OnConsoleMessage')
+      .string(msg)
+      .end();
+
+    main.Packet.sendPacket(peerid, p.return().data, p.return().len);
+    p.reconstruct();
   }
 };
