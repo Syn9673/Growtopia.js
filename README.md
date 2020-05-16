@@ -58,7 +58,7 @@ module.exports = {
 };
 ```
 
-Based on this example, it would say `Hello yourNameHere`. Required perms is not needed as they can be omitted since the default is undefined. You can check the `Constants.Permissions` object to see what are the available permissions. That's how you can create your commands. No need to handle how they are loaded as it is handled upon start. When modifying a command, you would need to restart the server. This will be fixed, but not soon as it's not very important. Another thing you might've noticed is the lack of permission system. We haven't added that feature since the User Accounts feature would be needed and it is still in development. Expect this soon™️
+Based on this example, it would say `Hello yourNameHere`. Required perms is not needed as they can be omitted since the default is undefined. You can check the `Constants.Permissions` object to see what are the available permissions. That's how you can create your commands. No need to handle how they are loaded as it is handled upon start. When modifying a command, you would need to restart the server. This will be fixed, but not soon as it's not very important.
 
 ## Docs
 Our docs are automaticlly made. They're in /docs.
