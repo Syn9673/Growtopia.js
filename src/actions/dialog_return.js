@@ -37,7 +37,7 @@ module.exports = function(main, packet, peerid, p) {
       if (!username.match(/^\w+/g)) {
         p.create()
           .string('OnConsoleMessage')
-          .string('Username cannot be empty or contain symbols')
+          .string('Username cannot be empty or contain symbols.')
           .end()
 
         main.Packet.sendPacket(peerid, p.return().data, p.return().len);
@@ -78,7 +78,6 @@ module.exports = function(main, packet, peerid, p) {
       main.Packet.sendPacket(peerid, p.return().data, p.return().len);
       p.reconstruct();
 
-      //GamePacket p2 = packetEnd(appendString(appendString(appendInt(appendString(createPacket(), "SetHasGrowID"), 1), username), password));
       p.create()
         .string('SetHasGrowID')
         .int(1)
