@@ -22,7 +22,7 @@ class PlayerInfo {
 		this.player_age = "";
 		this.game_version = "";
 		this.isGuest = false;
-		this.permissions = 6;
+		this.permissions = 0;
 		this.roles = [];
 		this.temp = {
 			peerid: "",
