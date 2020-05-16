@@ -10,7 +10,7 @@ You would also need `enmap`, you can simply run `npm install enmap` to install i
 
 ## Example
 ```js
-const { Main, Host, Packet } = require('./index.js');
+const { Main} = require('./index.js');
 const Server = new Main({
   port: 17091, // note: this is the default value, you can not include this if you'd like.
   channels: 32, // note: this is the default value, you can not include this if you'd like.
@@ -25,11 +25,8 @@ const Server = new Main({
   secretKey: 'growtopia.js' // The secret key to use to encrypt passwords, PLEASE CHANGE THIS AND DO NOT TELL ANYONE YOU DON'T TRUST
 });
 
-const HostHandler = new Host(Server);
-const PacketHandler = new Packet(Server);
-
-HostHandler.init();
-HostHandler.create();
+Server.Host.init();
+Server.Host.create();
 
 Server.on('connect', (peerid) => console.log(`A client connected with peer ${peerid}`));
 Server.on('receive', (packet, peerid) => {
@@ -37,7 +34,7 @@ Server.on('receive', (packet, peerid) => {
 });
 Server.on('disconnect', (peerid) => console.log(`A client disconnected with peer ${peerid}`));
 
-HostHandler.start()
+Server.Host.start()
 ```
 
 ## Creating Commands
