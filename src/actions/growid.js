@@ -8,7 +8,7 @@ module.exports = function(main, packet, peerid, p) {
     .addInputBox('username', 'GrowID', '', 30)
     .addInputBox('password', 'Password', '', 100)
     .addSpacer('small')
-    .addTextBox('Your email will be used for security verification and possible loss access on your account.')
+    .addTextBox('Your email will be used for security verification and possible loss of access on your account.')
     .addInputBox('email', 'Email', '', 100)
     .endDialog('register', 'Cancel', 'Get My GrowID!')
 
