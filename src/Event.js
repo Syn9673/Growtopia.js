@@ -12,7 +12,6 @@ module.exports = {
     main.emit('connect', peerid);
     const data = Buffer.from([0x01, 0x00, 0x00, 0x00, 0x00]).toString();
 
-    // send hello packet
     main.Packet.sendStringPacket(peerid, data);
   },
 
@@ -38,7 +37,7 @@ module.exports = {
   onReceive: async function(main, packet, peerid) {
     const packetType = main.GetPacketType(packet);
     const dataMap = new Map();
-    
+
     if (packetType === 2 || packetType === 3) {
       const decodedPacket = main.GetMessage(packet);
       let split = decodedPacket.split('\n');
@@ -55,7 +54,7 @@ module.exports = {
           let index = value.indexOf('\0')
           if (index > -1)
             value = value.substr(0, index);
-              
+
           dataMap.set(vsplit.split('|')[0], value)
         }
       }
@@ -67,7 +66,7 @@ module.exports = {
       }
 
       // Account handling
-  
+
       if (dataMap.has('requestedName') || dataMap.has('tankIDName')) {
         let user = dataMap.get('tankIDName')
         if (dataMap.has('tankIDName')) {
@@ -80,7 +79,7 @@ module.exports = {
               .string('OnConsoleMessage')
               .string(errorMsg)
               .end();
-            
+
             main.Packet.sendPacket(peerid, p.return().data, p.return().len);
             main.Packet.sendQuit(peerid);
             return p.reconstruct();
@@ -144,7 +143,7 @@ module.exports = {
         player.temp.peerid = peerid;
         player.tankIDPass = player.tankIDPass.length > 0 ? hmac.update(player.tankIDPass).digest('hex') : '';
         player.states = [];
-        
+
         if (player.roles.length < 1) {
           for (let perm of Object.keys(Constants.Permissions)) {
             let calculatedPerm = player.permissions & Constants.Permissions[perm];
@@ -167,7 +166,7 @@ module.exports = {
 
         for (let [peer, currentPlayer] of main.players) {
           if (main.Host.checkIfConnected(peer)) {
-            if ((player.tankIDName === currentPlayer.tankIDName || (player.requestedName && !player.tankIDName && player.mac === currentPlayer.mac && player.temp.peerid !== currentPlayer.temp.peerid))) {
+            /*if ((player.tankIDName === currentPlayer.tankIDName || (player.requestedName && !player.tankIDName && player.mac === currentPlayer.mac && player.temp.peerid !== currentPlayer.temp.peerid))) {
 
               p.create()
                 .string('OnConsoleMessage')
@@ -176,7 +175,7 @@ module.exports = {
 
               main.Packet.sendPacket(peerid, p.return().data, p.return().len);
               p.reconstruct();
-              
+
               p.create()
                 .string('OnConsoleMessage')
                 .string('Kicking you out as somebody is trying to login')
@@ -191,12 +190,12 @@ module.exports = {
 
               if (currentPlayer.currentWorld)
                 main.Packet.sendPlayerLeave(peer);
-            }
+            }*/
           }
         }
 
         main.players.set(peerid, player);
-  
+
         p.create()
           .string('OnSuperMainStartAcceptLogonHrdxs47254722215a')
           .int(main.itemsDatHash)
@@ -214,10 +213,10 @@ module.exports = {
         } else {
           main.Packet.sendPacket(peerid, p.return().data, p.return().len);
           p.reconstruct();
-        }    
+        }
       }
     } else if (packetType === 4) {
-      HandleStruct(main, packet, peerid);
+      HandleStruct(main, packet, peerid, p);
     }
-  } 
+  }
 };

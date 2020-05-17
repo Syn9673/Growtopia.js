@@ -5,5 +5,8 @@ module.exports = function(main, packet, peerid, p) {
     main.playersDB.set(player.rawName, player);
   }
 
+  player.hasClothesUpdated = false;
+
+  main.players.set(peerid, player);
   main.Packet.sendQuit(peerid);
 };

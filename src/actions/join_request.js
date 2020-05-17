@@ -21,7 +21,7 @@ module.exports = function(main, packet, peerid, p) {
   let name = packet.get('name').toUpperCase();
   let world = main.worlds.get(name);
 
-  if (world) {    
+  if (world) {
     player = main.players.get(peerid);
     player.currentWorld = name
 
@@ -51,12 +51,12 @@ module.exports = function(main, packet, peerid, p) {
   for (let j = 0; j < world.width*world.height; j++) {
     if (world.items[j].foreground == 6) {
       x = (j % world.width) * 32;
-      y = (j / world.width) * 31;
+      y = (j / world.width) * 31.6;
     }
   }
 
-  player.x = x;
-  player.y = y;
+  player.x = Math.floor(x);
+  player.y = Math.floor(y);
 
   main.players.set(peerid, player);
 
@@ -69,4 +69,5 @@ module.exports = function(main, packet, peerid, p) {
   p.reconstruct();
 
   main.Packet.onPeerConnect(peerid);
+  main.Packet.sendInventory(peerid);
 };

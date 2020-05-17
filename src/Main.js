@@ -1,5 +1,11 @@
-const { EventEmitter } = require('events');
-const { readFileSync, readdirSync, statSync } = require('fs');
+const {
+  EventEmitter
+} = require('events');
+const {
+  readFileSync,
+  readdirSync,
+  statSync
+} = require('fs');
 const WorldItem = require('./structs/WorldItem');
 const WorldInfo = require('./structs/WorldInfo');
 const CONSTANTS = require('./structs/Constants');
@@ -7,6 +13,7 @@ const PacketCreator = require('./PacketCreator');
 const Endb = require('enmap');
 let p = new PacketCreator();
 let netID = 0;
+let items = new Map();
 
 /**
  * The Main Class is the file that you would require to handle everything.
@@ -30,7 +37,7 @@ class Main extends EventEmitter {
   #version;
   #loadCommands = function() {
     let files = readdirSync(this.commandsDir)
-    .filter(file => statSync(`${this.commandsDir}/${file}`).isFile() && file.endsWith('.js'));
+      .filter(file => statSync(`${this.commandsDir}/${file}`).isFile() && file.endsWith('.js'));
 
     for (let i = 0; i < files.length; i++) {
       let file = require(`${this.commandsDir}/${files[i]}`);
@@ -85,7 +92,7 @@ class Main extends EventEmitter {
       commandsDir: {
         value: options.commandsDir || `${__dirname}/commands`
       },
-      
+
       secret: {
         value: options.secretKey || 'growtopia.js'
       },
@@ -139,7 +146,7 @@ class Main extends EventEmitter {
        */
 
       Packet: {
-        value: new (require('./Packet'))(this)
+        value: new(require('./Packet'))(this)
       },
 
       /**
@@ -147,7 +154,7 @@ class Main extends EventEmitter {
        */
 
       Host: {
-        value: new (require('./Host'))(this)
+        value: new(require('./Host'))(this)
       },
 
       /**
@@ -163,7 +170,7 @@ class Main extends EventEmitter {
        */
 
       Dialog: {
-        value: new (require('./Dialog'))()
+        value: new(require('./Dialog'))()
       }
     });
 
@@ -179,6 +186,10 @@ class Main extends EventEmitter {
 
   get version() {
     return this.#version;
+  }
+
+  getItems() {
+    return items;
   }
 
   /**
@@ -211,7 +222,7 @@ class Main extends EventEmitter {
   /**
    * Gets the message type from the ArrayBuffer provided by the server.
    * @param {ArrayBuffer} packet The packet you received.
-   * @returns {Number} 
+   * @returns {Number}
    */
 
   GetPacketType(packet) {
@@ -259,6 +270,7 @@ class Main extends EventEmitter {
 
   buildItemsDatabase(location) {
     let file;
+    let secret = 'PBG892FXX982ABC*';
 
     try {
       file = readFileSync(location);
@@ -272,6 +284,262 @@ class Main extends EventEmitter {
     for (let i = 0; i < file.length; i++) {
       buf.data[60 + i] = file[i];
     }
+
+    //return buf.data;
+    let itemCount;
+    let mempos = 0;
+    let itemsDatVersion = 0;
+    let data = file;
+    let items = [];
+
+    itemsDatVersion = data.readIntLE(mempos, 2);
+    mempos += 2;
+    itemCount = data.readIntLE(mempos, 4);
+    mempos += 4;
+
+    for (var k = 0; k < itemCount; k++) {
+      const id = data.readIntLE(mempos, 4); // First item id
+      mempos += 4;
+      const editableType = data[mempos]; // Firt item editable type
+      mempos += 1;
+      const itemCategory = data[mempos]; // Item category (!!)
+      mempos += 1;
+      const actionType = data[mempos]; // Actiontype
+      mempos += 1;
+      const hitSoundType = data[mempos]; // Hit sound type
+      mempos += 1;
+      const nameLength = data.readInt16LE(mempos); // Little-Endian 16 Bit Int
+      mempos += 2;
+
+      var name = "";
+
+      for (var i = 0; i < nameLength; i++) {
+        name += String.fromCharCode(data[mempos] ^ (secret.charCodeAt((id + i) % secret.length)));
+        mempos += 1;
+      }
+
+      var texture = "";
+      const textureLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      for (var i = 0; i < textureLength; i++) {
+        texture += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      const textureHash = data.readIntLE(mempos, 4);
+      mempos += 4;
+
+      const itemKind = data[mempos];
+      mempos += 1;
+
+      const itemVal = data.readIntLE(mempos, 4);
+      mempos += 4;
+
+      const textureX = data[mempos];
+      mempos += 1;
+
+      const textureY = data[mempos];
+      mempos += 1;
+
+      const spreadType = data[mempos];
+      mempos += 1;
+
+      const isStripeyWallpaper = data[mempos];
+      mempos += 1;
+
+      const collisionType = data[mempos];
+      mempos += 1;
+
+      const breakHits = data[mempos];
+      mempos += 1;
+
+      const dropChance = data.readIntLE(mempos, 4);
+      mempos += 4;
+
+      const clothingType = data[mempos];
+      mempos += 1;
+
+      const rarity = data.readIntLE(mempos, 2);
+      mempos += 2;
+
+      const maxAmount = data[mempos];
+      mempos += 1;
+
+      const extraFileLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      var extraFile = "";
+      for (var i = 0; i < extraFileLength; i++) {
+        extraFile += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      const extraFileHash = data.readIntLE(mempos, 4);
+      mempos += 4;
+
+      const audioVolume = data.readIntLE(mempos, 4);
+      mempos += 4;
+
+      const petNameLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      var petName = "";
+      for (var i = 0; i < petNameLength; i++) {
+        petName += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      const petPrefixLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      var petPrefix = "";
+      for (var i = 0; i < petPrefixLength; i++) {
+        petPrefix += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      const petSuffixLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      var petSuffix = "";
+      for (var i = 0; i < petSuffixLength; i++) {
+        petSuffix += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      const petAbilityLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      var petAbility = "";
+      for (var i = 0; i < petAbilityLength; i++) {
+        petAbility += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      const seedBase = data[mempos];
+      mempos += 1;
+
+      const seedOverlay = data[mempos];
+      mempos += 1;
+
+      const treeBase = data[mempos];
+      mempos += 1;
+
+      const treeLeaves = data[mempos];
+      mempos += 1;
+
+
+      const seedColor = data.readIntLE(mempos, 4);
+      mempos += 4;
+
+      const seedOverlayColor = data.readIntLE(mempos, 4);
+      mempos += 4;
+
+      mempos += 4; /* Ingredients Ignored */
+
+      const growTime = data.readIntLE(mempos, 4);
+      mempos += 4;
+
+      const itemValueTwo = data.readIntLE(mempos, 2);
+      mempos += 2;
+
+      const isRayman = data.readIntLE(mempos, 2);
+      mempos += 2;
+
+      const extraOptionsLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      var extraOptions = "";
+      for (var i = 0; i < extraOptionsLength; i++) {
+        extraOptions += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      var textureTwo = "";
+      const textureTwoLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      for (var i = 0; i < textureTwoLength; i++) {
+        textureTwo += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      const extraOptionsTwoLength = data.readInt16LE(mempos);
+      mempos += 2;
+
+      var extraOptionsTwo = "";
+      for (var i = 0; i < extraOptionsTwoLength; i++) {
+        extraOptionsTwo += String.fromCharCode(data[mempos]);
+        mempos += 1;
+      }
+
+      mempos += 80;;
+
+      var punchOptions = "";
+
+      if (itemsDatVersion >= 11) {
+        const punchOptionsLength = data.readInt16LE(mempos);
+        mempos += 2;
+
+        for (var y = 0; y < punchOptionsLength; y++) {
+          punchOptions += String.fromCharCode(data[mempos]);
+          mempos += 1;
+        }
+      }
+
+      const ItemObject = {
+        itemID: id,
+        hitSoundType: hitSoundType,
+        name: name,
+        texture: texture,
+        textureHash: textureHash,
+        val1: itemVal,
+        itemKind: itemKind,
+        editableType: editableType,
+        itemCategory: itemCategory,
+        actionType: actionType,
+        textureX: textureX,
+        textureY: textureY,
+        spreadType: spreadType,
+        isStripeyWallpaper: isStripeyWallpaper,
+        collisionType: collisionType,
+        breakHits: breakHits,
+        dropChance: dropChance,
+        clothingType: clothingType,
+        rarity: rarity,
+        maxAmount: maxAmount,
+        extraFile: extraFile,
+        extraFileHash: extraFileHash,
+        audioVolume: audioVolume,
+        petName: petName,
+        petPrefix: petPrefix,
+        petSuffix: petSuffix,
+        petAbility: petAbility,
+        seedColor: seedColor,
+        seedBase: seedBase,
+        seedOverlay: seedOverlay,
+        treeBase: treeBase,
+        treeLeaves: treeLeaves,
+        seedOverlayColor: seedOverlayColor,
+        growTime: growTime,
+        val2: itemValueTwo,
+        isRayman: isRayman,
+        extraOptions: extraOptions,
+        texture2: textureTwo,
+        extraOptions2: extraOptionsTwo,
+        punchOptions: punchOptions
+      };
+
+      items.push(ItemObject);
+    }
+
+    for (let item of items) {
+      this.getItems().set(item.itemID, item);
+    }
+
+    const { writeFileSync } = require('fs');
+    //writeFileSync('test.json', JSON.stringify(items, null, 2))
 
     return buf.data;
   }
@@ -289,30 +557,35 @@ class Main extends EventEmitter {
     world.name = name;
     world.width = width;
     world.height = height;
-  
-    for (let i = 0; i < world.width*world.height; i++)
-    {
+
+    for (let i = 0; i < world.width * world.height; i++) {
       world.items[i] = new WorldItem();
-  
-      if (i >= 3800 && i < 5400 && !(Math.floor(Math.random() * 50))) { world.items[i].foreground = 10; }
-      else if (i >= 3700 && i < 5400) {
+
+      if (i >= 3800 && i < 5400 && !(Math.floor(Math.random() * 50))) {
+        world.items[i].foreground = 10;
+      } else if (i >= 3700 && i < 5400) {
         if (i > 5000) {
-          if (i % 7 == 0) { world.items[i].foreground = 4;}
-          else { world.items[i].foreground = 2; }
+          if (i % 7 == 0) {
+            world.items[i].foreground = 4;
+          } else {
+            world.items[i].foreground = 2;
+          }
+        } else {
+          world.items[i].foreground = 2;
         }
-        else { world.items[i].foreground = 2; }
+      } else if (i >= 5400) {
+        world.items[i].foreground = 8;
       }
-      else if (i >= 5400) { world.items[i].foreground = 8; }
       if (i >= 3700)
         world.items[i].background = 14;
       if (i === 3650)
         world.items[i].foreground = 6;
-      else if (i >= 3600 && i<3700)
+      else if (i >= 3600 && i < 3700)
         world.items[i].foreground = 0;
       if (i == 3750)
         world.items[i].foreground = 8;
     }
-  
+
     return world;
   }
 };
@@ -320,7 +593,7 @@ class Main extends EventEmitter {
 // DOCS PURPOSES
 /**
  * Connect Event
- * 
+ *
  * @event Main#connect
  * @property {String} peerid The id of the peer that connected
  */
@@ -328,7 +601,7 @@ class Main extends EventEmitter {
 /**
  * Receive Event
  * Emitted when you receive data
- * 
+ *
  * @event Main#receive
  * @property {Map} packet A map of received packets from the client.
  * @property {String} peerid The id of the peer that send that packet.

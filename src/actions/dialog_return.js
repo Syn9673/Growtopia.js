@@ -1,4 +1,5 @@
 const PlayerInfo = require('../structs/PlayerInfo');
+const PlayerMoving = require('../structs/PlayerMoving');
 const crypto = require('crypto');
 
 module.exports = function(main, packet, peerid, p) {
@@ -90,6 +91,49 @@ module.exports = function(main, packet, peerid, p) {
 
       main.Packet.sendQuit(peerid);
 
+      break;
+    }
+
+    case 'edit_sign': {
+      let tile = parseInt(packet.get('tile'));
+      let newData = packet.get('newData');
+      let player = main.players.get(peerid);
+      let world = main.worlds.get(player.currentWorld);
+
+      if (world) {
+        let signs = world.signs;
+        for (let i = 0; i < signs.length; i++) {
+          if (signs[i].pos === tile) {
+            signs[i].data = newData;
+          }
+        }
+
+        world.signs = signs;
+
+        main.worlds.set(player.currentWorld, world);
+
+        let data = new PlayerMoving();
+
+        for (let peer of [...main.players.keys()]) {
+          if (!main.Host.checkIfConnected(peer))
+            continue;
+
+          data.characterState = 0x00;
+          data.packetType = 0x03;
+          data.netID = -1;
+          data.x = parseFloat(packet.get('x'));
+          data.y = parseFloat(packet.get('y'));
+          data.plantingTree = 20;
+          data.xSpeed = 0;
+          data.ySpeed = 0;
+          data.punchX = parseInt(packet.get('punchX'));
+          data.punchY = parseInt(packet.get('punchY'));
+
+          //if (main.Host.isInSameWorld(peerid, peer)) {
+            main.Packet.sendPacketRaw(peer, 4, main.Packet.packPlayerMoving(data), 56, 0);
+          //}
+        }
+      }
       break;
     }
 

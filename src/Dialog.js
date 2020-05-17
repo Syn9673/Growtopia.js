@@ -8,7 +8,7 @@ class Dialog {
 
   /**
    * Sets the default color of the dialog
-   * @param {String} color 
+   * @param {String} color
    * @returns {Dialog}
    */
 
@@ -56,6 +56,11 @@ class Dialog {
         break;
     }
 
+    return this;
+  }
+
+  embed(key, val) {
+    this.#str += `embed_data|${key}|${val}\n`;
     return this;
   }
 
@@ -107,7 +112,7 @@ class Dialog {
   /**
    * Adds a small text
    * @param {String} str The text to add
-   * @returns {Dialog} 
+   * @returns {Dialog}
    */
 
   addSmallText(str) {

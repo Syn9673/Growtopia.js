@@ -10,7 +10,7 @@ You would also need `enmap`, you can simply run `npm install enmap` to install i
 
 ## Example
 ```js
-const { Main} = require('./index.js');
+const { Main } = require('./index.js');
 const Server = new Main({
   port: 17091, // note: this is the default value, you can not include this if you'd like.
   channels: 32, // note: this is the default value, you can not include this if you'd like.

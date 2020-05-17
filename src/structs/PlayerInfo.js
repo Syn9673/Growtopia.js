@@ -1,3 +1,5 @@
+const PlayerInventory = require('./PlayerInventory');
+
 class PlayerInfo {
 	#main;
 	constructor(main) {
@@ -18,6 +20,7 @@ class PlayerInfo {
 		this.y1 = 0;
 		this.ip = "";
 		this.mac = "";
+		this.inventory = new PlayerInventory();
 		this.platformID = 0;
 		this.player_age = "";
 		this.game_version = "";
@@ -28,6 +31,20 @@ class PlayerInfo {
 			peerid: "",
 			MovementCount: 0
 		};
+
+		this.clothes = {
+			hair: 0,
+			shirt: 0,
+			pants: 0,
+			feet: 0,
+			hand: 0,
+			back: 0,
+			mask: 0,
+			necklace: 0
+		};
+
+		this.skinColor = 0x8295C3FF;
+		this.hasClothesUpdated = false;
 
 		this.states = [];
 	}

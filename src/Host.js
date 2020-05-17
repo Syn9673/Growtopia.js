@@ -65,13 +65,18 @@ class Host extends EventEmitter {
         })
       })
     }
-    
+
     const run = async () => {
-      while (listening) {
-        await conn();
-      }
+      let interval = setInterval(async() => {
+        if (listening)
+          await conn();
+        else {
+          clearInterval(interval);
+          interval = null;
+        }
+      }, 1000);
     }
-    
+
     run();
     this.checkExit();
 
@@ -114,22 +119,22 @@ class Host extends EventEmitter {
       for (let [peerid, player] of this.#main.players) {
         player.temp.peerid = "";
         player.temp.MovementCount = 0;
-    
+
         if (!player.tankIDName)
           continue;
 
         this.#main.playersDB.set(player.tankIDName.toLowerCase(), player);
         this.#main.players.delete(peerid);
       }
-    
+
       console.log('Saving worlds to Database...');
       for (let [name, world] of this.#main.worlds) {
         world.players = [];
-        
+
         this.#main.worldsDB.set(name, world);
         this.#main.worlds.delete(name);
       }
-    
+
       process.exit();
     });
   }

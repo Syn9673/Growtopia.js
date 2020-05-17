@@ -38,7 +38,7 @@ class PacketCreator {
       hex += parseInt(string[i + 1], 16);
 
       this.data.writeUIntLE(hex, (i / 2), 1);
-      
+
       i += 2;
     }
 
@@ -140,6 +140,34 @@ class PacketCreator {
     return this;
   }
 
+  float(val, val2, val3) {
+    let addLen = 0;
+    let addLen2 = 0;
+
+    let data = Buffer.alloc(this.len + 14);
+    let i = 0;
+
+    while (i < data.length) {
+      data[i] = this.data[i] || 0;
+      i++;
+    }
+
+    addLen = 4;
+    addLen2 = 12;
+
+    data.writeUIntLE(this.indexes, this.len, 1);
+    data.writeUIntLE(addLen, this.len + 1, 1);
+    data.writeFloatLE(val, this.len + 2, 4);
+    data.writeFloatLE(val2, this.len + 6, 4);
+    data.writeFloatLE(val3, this.len + 10, 4);
+
+    this.len = this.len + 2 + addLen2;
+    this.indexes++;
+
+    this.data = data;
+    return this;
+  }
+
   /**
    * Reconstructs the packet. Does not create a new instance, it just resets all data of the packet.
    * @returns {PacketCreator}
@@ -165,7 +193,7 @@ class PacketCreator {
    * Creates a new instance of PacketCreator
    * @returns {PacketCreator}
    */
-  
+
   new() {
     return new PacketCreator();
   }
