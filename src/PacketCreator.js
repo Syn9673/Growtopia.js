@@ -38,7 +38,7 @@ class PacketCreator {
       hex += parseInt(string[i + 1], 16);
 
       this.data.writeUIntLE(hex, (i / 2), 1);
-
+      
       i += 2;
     }
 
@@ -193,7 +193,7 @@ class PacketCreator {
    * Creates a new instance of PacketCreator
    * @returns {PacketCreator}
    */
-
+  
   new() {
     return new PacketCreator();
   }

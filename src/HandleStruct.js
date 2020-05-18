@@ -29,8 +29,8 @@ module.exports = function(main, packet, peerid, p) {
             continue;
 
           if (!main.Host.isInSameWorld(peerid, peers[i]))
-            continue;
-
+            continue;        
+            
           main.Packet.sendState(peers[i]);
         }
       }
@@ -95,9 +95,9 @@ module.exports = function(main, packet, peerid, p) {
         case 6: {
           if (wings.includes(data.plantingTree))
             player.addState('canDoubleJump')
-
+            
           main.Packet.sendState(peerid);
-
+            
           player.clothes.back = data.plantingTree;
           break;
         }
@@ -125,6 +125,8 @@ module.exports = function(main, packet, peerid, p) {
       let player = main.players.get(peerid);
       let world = main.worlds.get(player.currentWorld);
 
+      if (main.getItems().get(data.plantingTree).actionType === 20) return;
+
       if (data.plantingTree === 18) {
         let block = world.items[x + (y * world.width)].foreground;
 
@@ -138,16 +140,34 @@ module.exports = function(main, packet, peerid, p) {
             .intx(0)
             .end();
 
-        main.Packet.sendPacket(peerid, p.return().data, p.return().len);
-        return p.reconstruct();
+          main.Packet.sendPacket(peerid, p.return().data, p.return().len);
+          return p.reconstruct();
         }
-
         world.items[x + (y * world.width)].foreground = 0;
       } else {
-        world.items[x + (y * world.width)].foreground = data.plantingTree;
+        let items = player.inventory.items;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].itemID === data.plantingTree) {
+            if (items[i].itemCount > 1) {
+              items[i].itemCount -= 1;
+            } else {
+              items.splice(i, 1);
+            }
+          }
+        }
+
+        player.inventory.items = items;
+
+        if (main.getItems().get(data.plantingTree).actionType === 18) {
+          world.items[x + (y * world.width)].background = data.plantingTree;
+        } else {
+          world.items[x + (y * world.width)].foreground = data.plantingTree;
+        }
       }
 
       main.worlds.set(player.currentWorld, world);
+      main.players.set(peerid, player);
+      main.Packet.sendInventory(peerid);
 
       for (let peer of [...main.players.keys()]) {
         if (!main.Host.checkIfConnected(peer))

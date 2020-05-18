@@ -1,7 +1,8 @@
 class PlayerInventory {
   constructor() {
     this.items = [];
-    this.size = 16;
+    this.size = 32;
+    this.autoAddAmount = 16;
   }
 }
 

@@ -171,6 +171,14 @@ class Main extends EventEmitter {
 
       Dialog: {
         value: new(require('./Dialog'))()
+      },
+
+      /**
+       * @prop {String} disconnects A map of all players that disconnected, this can be useful for disconnected people. Should be deleted after transfer!
+       */
+
+      disconnects: {
+        value: new Map()
       }
     });
 
@@ -222,7 +230,7 @@ class Main extends EventEmitter {
   /**
    * Gets the message type from the ArrayBuffer provided by the server.
    * @param {ArrayBuffer} packet The packet you received.
-   * @returns {Number}
+   * @returns {Number} 
    */
 
   GetPacketType(packet) {
@@ -593,7 +601,7 @@ class Main extends EventEmitter {
 // DOCS PURPOSES
 /**
  * Connect Event
- *
+ * 
  * @event Main#connect
  * @property {String} peerid The id of the peer that connected
  */
@@ -601,7 +609,7 @@ class Main extends EventEmitter {
 /**
  * Receive Event
  * Emitted when you receive data
- *
+ * 
  * @event Main#receive
  * @property {Map} packet A map of received packets from the client.
  * @property {String} peerid The id of the peer that send that packet.

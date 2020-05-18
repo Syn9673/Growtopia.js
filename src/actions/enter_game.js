@@ -3,39 +3,21 @@ const InventoryItem = require('../structs/InventoryItem');
 
 module.exports = function(main, packet, peerid, p) {
   main.Packet.requestWorldSelect(peerid);
+
   let player = main.players.get(peerid);
-  main.players.set(peerid, player);
+  let peers = [...main.players.keys()];
+  let staff = 0;
+  let string = `\`oThere ${peers.length > 1 ? 'are' : 'is'} \`w${peers.length}\`o player${peers.length > 1 ? 's' : ''} online. \`w${staff}\`o of them are a staff member.`;
 
   p.create()
     .string('OnConsoleMessage')
-    .string('`oWelcome to Growtopia.js!')
+    .string(string)
     .end();
 
-    main.Packet.sendPacket(peerid, p.return().data, p.return().len);
-    p.reconstruct();
-    
-    let peers = [...main.players.keys()];
+  main.Packet.sendPacket(peerid, p.return().data, p.return().len);
+  p.reconstruct();
 
-    let staff = 0;
-
-    peers.forEach((id) => {
-        var playername = main.players.get(id).displayName.replace(/`./g, "");
-        if (playername.charAt(0) == "@") {
-            staff += 1;
-        }
-    })
-
-    let string = `\`oThere are \`w${peers.length}\`o player online. \`w${staff}\`o of them are a staff member.`;
-
-    p.create()
-      .string('OnConsoleMessage')
-      .string(string)
-      .end();
-
-    main.Packet.sendPacket(peerid, p.return().data, p.return().len);
-    p.reconstruct();
-
-    let welcomedialog = main.Dialog
+  let welcomedialog = main.Dialog
     .defaultColor()
     .addLabelWithIcon("Welcome to Growtopia.js!``","5016","big")
     .addSpacer("small")
@@ -44,31 +26,41 @@ module.exports = function(main, packet, peerid, p) {
     .addTextBox("Built by Alexander9673 and lukeawarmcat!")
     .endDialog("gazette", "", "OK");
 
-    p.create()
-      .string("OnDialogRequest")
-      .string(welcomedialog.str())
-      .end();
+  p.create()
+    .string("OnDialogRequest")
+    .string(welcomedialog.str())
+    .end();
 
 
-    main.Packet.sendPacket(peerid, p.return().data, p.return().len);
+  main.Packet.sendPacket(peerid, p.return().data, p.return().len);
 
-    p.reconstruct();
-    welcomedialog.reconstruct();
+  p.reconstruct();
+  welcomedialog.reconstruct();
 
   let inv = new PlayerInventory();
+  let invLength = player.inventory.items.length || 2;
 
-  for (let i = 0; i < player.inventory.size; i++) {
+  for (let i = 0; i < invLength; i++) {
     let item = new InventoryItem();
+    let invItem = player.inventory.items[i] ? player.inventory.items[i].itemID : (i * 2) + 2;
+    let itemCount = player.inventory.items[i] ? player.inventory.items[i].itemCount : 200;
 
-    if (i === 1) {
-      inv.items.push({ itemID: 32, itemCount: 200 });
+    if (invLength === 2) {
+      if (i === 0)
+        invItem = 18;
+      else if (i === 1)
+        invItem = 16 * 2;
     }
 
-    item.itemID = (i * 2) + 2;
-    item.itemCount = 200;
+    if (!player.inventory.items[i] && i > player.inventory.autoAddAmount) continue;
 
+    item.itemID = invItem;
+    item.itemCount = itemCount;
+    
     inv.items.push(item);
   }
 
   player.inventory = inv;
+
+  main.players.set(peerid, player);
 };

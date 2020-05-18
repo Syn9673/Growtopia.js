@@ -21,7 +21,7 @@ module.exports = function(main, packet, peerid, p) {
   let name = packet.get('name').toUpperCase();
   let world = main.worlds.get(name);
 
-  if (world) {
+  if (world) {    
     player = main.players.get(peerid);
     player.currentWorld = name
 
