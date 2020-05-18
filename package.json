@@ -1,6 +1,6 @@
 {
   "name": "growtopia.js",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "The first ever growtopia private server coded in nodejs.",
   "main": "index.js",
   "directories": {
@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/Alexander9673/gtps-wrapper#readme",
   "dependencies": {
+    "better-sqlite-pool": "^0.3.0",
+    "enmap": "^5.2.4",
     "restana": "^4.3.4"
   }
 }

@@ -1,18 +1,25 @@
 module.exports = {
   name: 'help',
-  run: function(main, arguments, peerid) {
+  requiredPerms: 0,
+  run: function(main, arguments, peerid, p) {
+    let player = main.players.get(peerid);
     let commands = [];
+
+    //console.log(value.requiredPerms & player.permissions)
+
     for (let [key, value] of main.commands) {
+      if (value.requiredPerms > 0)
+        if (!(value.requiredPerms & player.permissions)) continue;
+      
       commands.push(key);
-    };
+    }
 
-    let packet = main.packetEnd( 
-      main.appendString(
-        main.appendString(
-          main.createPacket(),
-          "OnConsoleMessage"),
-          `Available commands: \`w${commands.map(command => `/${command}`).join(' ')}`));
+    p.create()
+      .string('OnConsoleMessage')
+      .string(`Available commands: \`w${commands.map(command => `/${command}`).join(' ')}`)
+      .end();
 
-    main.getModule().Packets.sendPacket(peerid, packet.data, packet.len);
+    main.Packet.sendPacket(peerid, p.return().data, p.return().len);
+    p.reconstruct();
   }
 };

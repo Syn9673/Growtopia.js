@@ -7,6 +7,7 @@ class WorldInfo {
     this.owner = "";
     this.items = [];
     this.players = [];
+    this.signs = [];
   }
 };
 

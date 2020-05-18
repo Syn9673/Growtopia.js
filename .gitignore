@@ -108,3 +108,9 @@ test.js
 
 # package-lock
 package-lock.json
+
+# Enmap
+data
+
+# Item database
+items.dat
